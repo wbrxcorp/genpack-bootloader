@@ -1,10 +1,11 @@
+PREFIX ?= /usr/local
 ARCH := $(shell uname -m)
 MODULES := loopback xfs btrfs fat exfat ntfscomp ext2 iso9660 lvm squash4 part_gpt part_msdos \
 	blocklist configfile linux chain echo test probe search minicmd sleep \
     all_video videotest serial png gfxterm_background videoinfo keystatus
 
 ifeq ($(ARCH), x86_64)
-	TARGETS = bootx64.efi bootia32.efi
+	TARGETS = bootx64.efi bootia32.efi biosboot.img
 	# DO NOT INCLUDE "ahci" HERE.  It makes booting regular PC impossible.
 	MODULES += ata cpuid multiboot multiboot2 
 else ifeq ($(ARCH), aarch64)
@@ -24,6 +25,11 @@ bootx64.efi: grub.cfg
 bootia32.efi: grub.cfg
 	grub-mkimage -O i386-efi -o $@ -p /boot/grub -c $< $(MODULES)
 
+biosboot.img: grub.cfg
+	grub-mkimage -O i386-pc -o $@.tmp -p /boot/grub -c $< $(MODULES)
+	cat /usr/lib/grub/i386-pc/boot.img $@.tmp > $@
+	rm $@.tmp
+
 bootaa64.efi: grub.cfg
 	grub-mkimage -O arm64-efi -o $@ -p /boot/grub -c $< $(MODULES)
 
@@ -31,8 +37,8 @@ bootriscv64.efi: grub.cfg
 	grub-mkimage -O riscv64-efi -o $@ -p /boot/grub -c $< $(MODULES)
 
 install: $(TARGETS)
-	mkdir -p $(DESTDIR)/boot/efi/boot
-	cp -a $(TARGETS) $(DESTDIR)/boot/efi/boot/
+	mkdir -p $(DESTDIR)$(PREFIX)/lib/genpack/bootloader
+	cp -a $(TARGETS) $(DESTDIR)$(PREFIX)/lib/genpack/bootloader/
 
 clean:
-	rm -f *.efi
+	rm -f *.efi *.img *.tmp
