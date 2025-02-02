@@ -32,7 +32,7 @@ bootriscv64.efi: grub.cfg
 
 install: $(TARGETS)
 	mkdir -p $(DESTDIR)/boot/efi/boot
-	cp -a $(TARGETS) /boot/efi/boot/
+	cp -a $(TARGETS) $(DESTDIR)/boot/efi/boot/
 
 clean:
 	rm -f *.efi
