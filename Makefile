@@ -5,7 +5,7 @@ MODULES := loopback xfs btrfs fat exfat ntfscomp ext2 iso9660 lvm squash4 part_g
     all_video videotest serial png gfxterm_background videoinfo keystatus
 
 ifeq ($(ARCH), x86_64)
-	TARGETS = bootx64.efi bootia32.efi biosboot.img
+	TARGETS = bootx64.efi bootia32.efi biosboot.img eltorito.img
 	# DO NOT INCLUDE "ahci" HERE.  It makes booting regular PC impossible.
 	MODULES += ata cpuid multiboot multiboot2 
 else ifeq ($(ARCH), aarch64)
@@ -30,6 +30,9 @@ biosboot.img: grub.cfg
 	cat /usr/lib/grub/i386-pc/boot.img $@.tmp > $@
 	rm $@.tmp
 
+eltorito.img: grub.cfg
+	grub-mkimage -O i386-pc-eltorito -o $@ -p /boot/grub -c $< $(MODULES)
+
 bootaa64.efi: grub.cfg
 	grub-mkimage -O arm64-efi -o $@ -p /boot/grub -c $< $(MODULES)
 
@@ -37,8 +40,8 @@ bootriscv64.efi: grub.cfg
 	grub-mkimage -O riscv64-efi -o $@ -p /boot/grub -c $< $(MODULES)
 
 install: $(TARGETS)
-	mkdir -p $(DESTDIR)$(PREFIX)/lib/genpack/bootloader
-	cp -a $(TARGETS) $(DESTDIR)$(PREFIX)/lib/genpack/bootloader/
+	mkdir -p $(DESTDIR)$(PREFIX)/lib/genpack-bootloader
+	cp -a $(TARGETS) $(DESTDIR)$(PREFIX)/lib/genpack-bootloader/
 
 clean:
 	rm -f *.efi *.img *.tmp
