@@ -8,6 +8,10 @@ ifeq ($(ARCH), x86_64)
 	TARGETS = bootx64.efi bootia32.efi eltorito.img
 	# DO NOT INCLUDE "ahci" HERE.  It makes booting regular PC impossible.
 	MODULES += ata cpuid multiboot multiboot2 
+else ifeq ($(ARCH), i686)
+	TARGETS = bootia32.efi eltorito.img
+	# DO NOT INCLUDE "ahci" HERE.  It makes booting regular PC impossible.
+	MODULES += ata cpuid multiboot multiboot2 
 else ifeq ($(ARCH), aarch64)
 	TARGETS = bootaa64.efi
 	MODULES += fdt
